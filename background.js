@@ -4,6 +4,8 @@ let tabHistory = [];
 const MAX_HISTORY = 50;
 
 chrome.tabs.query({}, (tabs) => {
+  // Ordena por lastAccessed para refletir uso real desde o início
+  tabs.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
   tabs.forEach(tab => {
     if (!tabHistory.includes(tab.id)) tabHistory.push(tab.id);
   });
