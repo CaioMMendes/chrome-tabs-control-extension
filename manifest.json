@@ -4,31 +4,33 @@
   "version": "1.0.0",
   "description": "Alterna abas por ordem de uso recente com seletor visual estilo VSCode.",
   "permissions": ["tabs", "windows", "scripting", "activeTab"],
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-      "matches": ["http://*/*", "https://*/*", "file://*/*"],
-      "js": ["content.js"],
-      "run_at": "document_idle"
-    }
-  ],
   "action": {
-    "default_title": "Smart Tab Switcher"
+    "default_title": "Smart Tab Switcher",
+    "default_icon": {
+      "16": "icons/16.png",
+      "48": "icons/48.png"
+    }
   },
   "commands": {
     "quick-switch": {
       "suggested_key": {
         "default": "Ctrl+Q",
-        "mac": "Command+Q"
+        "mac": "MacCtrl+Q"
       },
       "description": "Trocar para a aba anterior (sem UI)"
     },
     "open-picker": {
       "suggested_key": {
         "default": "Ctrl+Shift+Q",
-        "mac": "Command+Shift+Q"
+        "mac": "MacCtrl+Shift+Q"
       },
       "description": "Abrir lista de abas recentes"
     }
