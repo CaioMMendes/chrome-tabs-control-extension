@@ -1,24 +1,25 @@
-'use strict';
+"use strict"
 
 // Limpa instância anterior se o script for reinjetado (após reload da extensão)
-if (window.__stsCleanup) window.__stsCleanup();
+if (window.__stsCleanup) window.__stsCleanup()
 
 const _state = {
   visible: false,
   tabs: [],
   selectedIndex: 0,
-  mode: 'vscode',
+  mode: "vscode",
   host: null,
-};
+}
 
 // ─── UI ────────────────────────────────────────────────────────────────────────
 
 function _render() {
-  if (_state.host) _state.host.remove();
+  if (_state.host) _state.host.remove()
 
-  const host = document.createElement('div');
-  host.style.cssText = 'all:initial;position:fixed;top:0;left:0;z-index:2147483647;';
-  const shadow = host.attachShadow({ mode: 'open' });
+  const host = document.createElement("div")
+  host.style.cssText =
+    "all:initial;position:fixed;top:0;left:0;z-index:2147483647;"
+  const shadow = host.attachShadow({ mode: "open" })
 
   shadow.innerHTML = `
     <style>
@@ -82,165 +83,172 @@ function _render() {
         <div class="footer">
           <span><kbd>Tab</kbd> próxima &nbsp;<kbd>Shift+Tab</kbd> anterior</span>
           <span><kbd>↑↓</kbd> navegar &nbsp;<kbd>Enter</kbd> abrir &nbsp;<kbd>Esc</kbd> fechar</span>
-          <span>Soltar <kbd>Ctrl</kbd> abre selecionada</span>
         </div>
       </div>
     </div>
-  `;
+  `
 
-  const list = shadow.getElementById('l');
+  const list = shadow.getElementById("l")
 
   _state.tabs.forEach((tab, i) => {
-    const item = document.createElement('div');
-    item.className = 'item' + (i === _state.selectedIndex ? ' active' : '');
+    const item = document.createElement("div")
+    item.className = "item" + (i === _state.selectedIndex ? " active" : "")
 
     if (tab.favIconUrl) {
-      const img = document.createElement('img');
-      img.className = 'favicon'; img.src = tab.favIconUrl; img.alt = '';
-      img.onerror = () => img.replaceWith(_ph());
-      item.appendChild(img);
+      const img = document.createElement("img")
+      img.className = "favicon"
+      img.src = tab.favIconUrl
+      img.alt = ""
+      img.onerror = () => img.replaceWith(_ph())
+      item.appendChild(img)
     } else {
-      item.appendChild(_ph());
+      item.appendChild(_ph())
     }
 
-    const info = document.createElement('div'); info.className = 'info';
-    const title = document.createElement('div'); title.className = 'title';
-    title.textContent = tab.title || 'Sem título';
-    const url = document.createElement('div'); url.className = 'url';
+    const info = document.createElement("div")
+    info.className = "info"
+    const title = document.createElement("div")
+    title.className = "title"
+    title.textContent = tab.title || "Sem título"
+    const url = document.createElement("div")
+    url.className = "url"
     try {
-      const p = new URL(tab.url);
-      url.textContent = p.hostname + (p.pathname !== '/' ? p.pathname.replace(/\/$/, '') : '');
-    } catch { url.textContent = tab.url || ''; }
-    info.appendChild(title); info.appendChild(url);
-    item.appendChild(info);
+      const p = new URL(tab.url)
+      url.textContent =
+        p.hostname + (p.pathname !== "/" ? p.pathname.replace(/\/$/, "") : "")
+    } catch {
+      url.textContent = tab.url || ""
+    }
+    info.appendChild(title)
+    info.appendChild(url)
+    item.appendChild(info)
 
     if (i === 0) {
-      const badge = document.createElement('span'); badge.className = 'badge';
-      badge.textContent = 'atual'; item.appendChild(badge);
+      const badge = document.createElement("span")
+      badge.className = "badge"
+      badge.textContent = "atual"
+      item.appendChild(badge)
     }
 
-    item.addEventListener('mousedown', (e) => { e.preventDefault(); _selectAndClose(i); });
-    list.appendChild(item);
-  });
+    item.addEventListener("mousedown", (e) => {
+      e.preventDefault()
+      _selectAndClose(i)
+    })
+    list.appendChild(item)
+  })
 
-  shadow.getElementById('o').addEventListener('mousedown', (e) => {
-    if (e.target.id === 'o') _hide();
-  });
+  shadow.getElementById("o").addEventListener("mousedown", (e) => {
+    if (e.target.id === "o") _hide()
+  })
 
-  document.documentElement.appendChild(host);
-  _state.host = host;
-  _scrollToActive(shadow);
+  document.documentElement.appendChild(host)
+  _state.host = host
+  _scrollToActive(shadow)
 }
 
 function _ph() {
-  const d = document.createElement('div'); d.className = 'favicon-ph'; return d;
+  const d = document.createElement("div")
+  d.className = "favicon-ph"
+  return d
 }
 
 function _scrollToActive(shadow) {
-  (shadow || _state.host?.shadowRoot)?.querySelector('.item.active')?.scrollIntoView({ block: 'nearest' });
+  ;(shadow || _state.host?.shadowRoot)
+    ?.querySelector(".item.active")
+    ?.scrollIntoView({ block: "nearest" })
 }
 
 function _updateActive() {
-  const shadow = _state.host?.shadowRoot;
-  if (!shadow) return;
-  shadow.querySelectorAll('.item').forEach((el, i) => el.classList.toggle('active', i === _state.selectedIndex));
-  _scrollToActive(shadow);
+  const shadow = _state.host?.shadowRoot
+  if (!shadow) return
+  shadow
+    .querySelectorAll(".item")
+    .forEach((el, i) =>
+      el.classList.toggle("active", i === _state.selectedIndex),
+    )
+  _scrollToActive(shadow)
 }
 
 function _navigate(delta) {
-  if (!_state.visible || !_state.tabs.length) return;
-  _state.selectedIndex = (_state.selectedIndex + delta + _state.tabs.length) % _state.tabs.length;
-  _updateActive();
+  if (!_state.visible || !_state.tabs.length) return
+  _state.selectedIndex =
+    (_state.selectedIndex + delta + _state.tabs.length) % _state.tabs.length
+  _updateActive()
 }
 
 function _selectAndClose(index) {
-  const tab = _state.tabs[index];
-  if (tab) chrome.runtime.sendMessage({ action: 'switchToTab', tabId: tab.id });
-  _hide();
+  const tab = _state.tabs[index]
+  if (tab) chrome.runtime.sendMessage({ action: "switchToTab", tabId: tab.id })
+  _hide()
 }
 
 function _hide() {
-  _state.host?.remove();
-  _state.host = null;
-  _state.visible = false;
-  _state.tabs = [];
-  _state.selectedIndex = 0;
+  _state.host?.remove()
+  _state.host = null
+  _state.visible = false
+  _state.tabs = []
+  _state.selectedIndex = 0
 }
 
 // ─── Ponto de entrada chamado pelo background via executeScript ────────────────
 
-window.__stsShow = function(tabs, mode) {
-  _state.tabs = tabs;
-  _state.selectedIndex = tabs.length > 1 ? 1 : 0;
-  _state.mode = mode || 'vscode';
-  _state.visible = true;
-  _render();
-};
+window.__stsShow = function (tabs, mode) {
+  _state.tabs = tabs
+  _state.selectedIndex = tabs.length > 1 ? 1 : 0
+  _state.mode = mode || "vscode"
+  _state.visible = true
+  _render()
+}
 
 // ─── Teclado ──────────────────────────────────────────────────────────────────
 
 const _onKeydown = (e) => {
-  if (!_state.visible) return;
+  if (!_state.visible) return
   switch (e.key) {
-    case 'Tab':
-      e.preventDefault(); e.stopImmediatePropagation();
-      _navigate(e.shiftKey ? -1 : 1); break;
-    case 'ArrowDown':
-      e.preventDefault(); e.stopImmediatePropagation();
-      _navigate(1); break;
-    case 'ArrowUp':
-      e.preventDefault(); e.stopImmediatePropagation();
-      _navigate(-1); break;
-    case 'Enter':
-      e.preventDefault(); e.stopImmediatePropagation();
-      _selectAndClose(_state.selectedIndex); break;
-    case 'Escape':
-      e.preventDefault(); e.stopImmediatePropagation();
-      _hide(); break;
+    case "Tab":
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      _navigate(e.shiftKey ? -1 : 1)
+      break
+    case "ArrowDown":
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      _navigate(1)
+      break
+    case "ArrowUp":
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      _navigate(-1)
+      break
+    case "Enter":
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      _selectAndClose(_state.selectedIndex)
+      break
+    case "Escape":
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      _hide()
+      break
   }
-};
+}
 
 const _onKeyup = (e) => {
-  if (!_state.visible) return;
-  if (_state.mode === 'vscode' && (e.key === 'Control' || e.key === 'Meta')) {
-    _selectAndClose(_state.selectedIndex);
+  if (!_state.visible) return
+  if (_state.mode === "vscode" && (e.key === "Control" || e.key === "Meta")) {
+    _selectAndClose(_state.selectedIndex)
   }
-};
+}
 
-document.addEventListener('keydown', _onKeydown, true);
-document.addEventListener('keyup',   _onKeyup,   true);
-
-// ─── Mouse (botões laterais) ──────────────────────────────────────────────────
-// button 3 = botão 4 do mouse (voltar)
-// button 4 = botão 5 do mouse (avançar)
-
-const _onMousedown = (e) => {
-  if (!e.ctrlKey) return;
-
-  if (e.button === 3) {
-    // Ctrl + Botão 4 → troca rápida para a aba anterior
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    chrome.runtime.sendMessage({ action: 'quickSwitch' });
-  } else if (e.button === 4) {
-    // Ctrl + Botão 5 → abre o seletor visual
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    chrome.runtime.sendMessage({ action: 'getTabList' }, (response) => {
-      if (response?.tabs) window.__stsShow(response.tabs, 'picker');
-    });
-  }
-};
-
-document.addEventListener('mousedown', _onMousedown, true);
+document.addEventListener("keydown", _onKeydown, true)
+document.addEventListener("keyup", _onKeyup, true)
 
 // ─── Limpeza para a próxima reinjeção ─────────────────────────────────────────
 
-window.__stsCleanup = function() {
-  document.removeEventListener('keydown',   _onKeydown,   true);
-  document.removeEventListener('keyup',     _onKeyup,     true);
-  document.removeEventListener('mousedown', _onMousedown, true);
-  _hide();
-  delete window.__stsShow;
-  delete window.__stsCleanup;
-};
+window.__stsCleanup = function () {
+  document.removeEventListener("keydown", _onKeydown, true)
+  document.removeEventListener("keyup", _onKeyup, true)
+  _hide()
+  delete window.__stsShow
+  delete window.__stsCleanup
+}
