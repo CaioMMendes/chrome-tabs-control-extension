@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Smart Tab Switcher",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Alterna abas por ordem de uso recente com seletor visual estilo VSCode.",
   "permissions": ["tabs", "windows", "scripting", "activeTab"],
   "icons": {

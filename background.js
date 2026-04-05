@@ -87,7 +87,7 @@ async function quickSwitch() {
   if (target) chrome.tabs.update(target.id, { active: true })
 }
 
-// Ctrl+Shift+Q — abre a lista visual
+// Ctrl+Shift+Q — abre a lista visual (nunca troca de aba como fallback)
 async function openPicker() {
   const [active] = await chrome.tabs.query({
     active: true,
@@ -100,11 +100,8 @@ async function openPicker() {
   )
   if (!ordered.length) return
 
-  if (!canInject(active.url)) {
-    const target = ordered.find((t) => t.id !== active.id)
-    if (target) chrome.tabs.update(target.id, { active: true })
-    return
-  }
+  // Se não pode injetar na aba ativa, apenas ignora (não troca de aba)
+  if (!canInject(active.url)) return
 
   try {
     // activeTab + scripting: injeta apenas na aba ativa, sem content_scripts estático,
@@ -119,9 +116,7 @@ async function openPicker() {
       args: [prepareTabs(ordered), "picker"],
     })
   } catch {
-    // Página não permite injeção — troca direto
-    const target = ordered.find((t) => t.id !== active.id)
-    if (target) chrome.tabs.update(target.id, { active: true })
+    // Página não permite injeção — apenas ignora (não troca de aba)
   }
 }
 
